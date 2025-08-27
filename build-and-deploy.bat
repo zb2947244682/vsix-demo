@@ -28,7 +28,7 @@ echo 选择：%version_type% 版本更新
 echo ========================================
 
 echo.
-echo [1/4] 提交所有更改...
+echo [1/5] 提交所有更改...
 git add .
 git commit -m "feat: update for version bump"
 if errorlevel 1 (
@@ -37,7 +37,7 @@ if errorlevel 1 (
 echo ✓ 工作目录已提交
 
 echo.
-echo [2/4] 更新版本号...
+echo [2/5] 更新版本号...
 call npm version %version_type%
 if errorlevel 1 (
     echo 错误：版本更新失败
@@ -47,7 +47,7 @@ if errorlevel 1 (
 echo ✓ 版本号更新完成
 
 echo.
-echo [3/4] 获取新版本号...
+echo [3/5] 获取新版本号...
 call npm pkg get version > version.tmp
 set /p new_version=<version.tmp
 set new_version=%new_version:"=%
@@ -55,7 +55,22 @@ del version.tmp
 echo ✓ 新版本：%new_version%
 
 echo.
-echo [4/4] 打包插件...
+:: 函数：删除旧的 .vsix 文件
+:: 描述：在打包新插件之前，确保清除所有旧的 .vsix 文件，避免冲突。
+:: 注意：使用 /q 参数避免删除确认提示。
+"echo. [4/5] 清理旧的 .vsix 文件..."
+del /q *.vsix
+if exist *.vsix (
+    "echo 警告：未能完全删除所有旧的 .vsix 文件。"
+) else (
+    "echo ✓ 旧的 .vsix 文件已清理。"
+)
+
+echo.
+:: 函数：打包插件
+:: 描述：使用 vsce 工具将插件打包成 .vsix 文件。
+:: 注意：确保已安装 vsce (npm install -g @vscode/vsce)。
+"echo. [5/5] 打包插件..."
 call vsce package
 if errorlevel 1 (
     echo 错误：打包失败
