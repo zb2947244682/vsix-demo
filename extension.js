@@ -137,7 +137,6 @@ function formatCurrentLine() {
 
 				// 更新进度
 				if (i % Math.max(1, Math.floor(lines.length / 50)) === 0) {
-					const progressPercent = Math.floor((i / lines.length) * 60) + 20;
 					progress.report({ increment: 0, message: `格式化进度: ${i + 1}/${lines.length}` });
 				}
 			}
