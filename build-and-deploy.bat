@@ -34,17 +34,56 @@ echo "开始执行构建部署流程..."
 echo "========================================"
 
 echo.
-echo "[1/4] 正在更新版本号..."
+echo "[1/5] 检查工作目录状态..."
+git status --porcelain > temp_status.txt
+set /p git_status=<temp_status.txt
+del temp_status.txt
+if not "!git_status!"=="" (
+    echo "发现未提交的更改，正在提交..."
+    git add .
+    if errorlevel 1 (
+        echo "错误：添加文件到暂存区失败！"
+        pause
+        exit /b 1
+    )
+    
+    set /p commit_msg="请输入提交信息（或按回车使用默认信息）: "
+    if "!commit_msg!"=="" (
+        set commit_msg=feat: update before version bump
+    )
+    
+    git commit -m "!commit_msg!"
+    if errorlevel 1 (
+        echo "错误：提交代码失败！"
+        pause
+        exit /b 1
+    )
+    echo "✓ 代码提交完成"
+) else (
+    echo "✓ 工作目录干净，无需提交"
+)
+
+echo.
+echo "[2/5] 正在更新版本号..."
 npm version %version_type%
 if errorlevel 1 (
     echo "错误：版本更新失败！"
     pause
     exit /b 1
 )
-echo "✓ 版本号更新完成"
+echo "✓ 版本号更新完成（npm version 已自动创建提交）"
 
 echo.
-echo "[2/4] 正在打包插件..."
+echo "[3/5] 获取当前版本号..."
+for /f "tokens=2 delims=:" %%i in ('npm pkg get version') do (
+    set current_version=%%i
+)
+set current_version=!current_version:"=!
+set current_version=!current_version: =!
+echo "✓ 当前版本: !current_version!"
+
+echo.
+echo "[4/5] 正在打包插件..."
 vsce package
 if errorlevel 1 (
     echo "错误：插件打包失败！"
@@ -54,17 +93,7 @@ if errorlevel 1 (
 echo "✓ 插件打包完成"
 
 echo.
-echo "[3/4] 正在提交代码到本地仓库..."
-git add .
-git commit -m "chore: bump version to %version_type%"
-if errorlevel 1 (
-    echo "警告：代码提交可能失败（可能没有变更）"
-) else (
-    echo "✓ 代码提交完成"
-)
-
-echo.
-echo "[4/4] 正在推送到远程仓库..."
+echo "[5/5] 正在推送到远程仓库..."
 git push origin main
 if errorlevel 1 (
     echo "尝试推送到 master 分支..."
@@ -75,8 +104,10 @@ if errorlevel 1 (
         pause
         exit /b 1
     )
+    echo "✓ 推送到 master 分支完成"
+) else (
+    echo "✓ 推送到 main 分支完成"
 )
-echo "✓ 推送到远程仓库完成"
 
 echo.
 echo "========================================"
@@ -84,11 +115,18 @@ echo "🎉 构建部署流程全部完成！"
 echo "========================================"
 echo.
 echo "执行的操作："
+echo "- ✓ 检查并提交未保存的更改"
+echo "- ✓ 版本号更新到 !current_version! (%version_type%)"
+echo "- ✓ 自动创建版本提交（由 npm version）"
 echo "- ✓ 插件打包"
-echo "- ✓ 版本号更新 (%version_type%)"
-echo "- ✓ 代码提交"
 echo "- ✓ 推送到远程仓库"
 echo.
+echo "生成的文件："
+for %%f in (*.vsix) do (
+    echo "- %%f"
+)
+echo.
 echo "您可以在 VS Code 中安装新打包的 .vsix 文件进行测试"
+echo "或者使用命令: code --install-extension [文件名].vsix"
 echo.
 pause
