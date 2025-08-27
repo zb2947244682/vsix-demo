@@ -27,7 +27,7 @@
       },
       {
         "command": "demo.formatCode",
-        "title": "格式化当前行"
+        "title": "格式化整个JS文件"
       },
       {
         "command": "demo.showStats",
@@ -44,7 +44,7 @@
         {
           "command": "demo.formatCode",
           "group": "modification",
-          "when": "editorTextFocus"
+          "when": "editorTextFocus && resourceExtname =~ /\.(js|ts)$/"
         }
       ]
     }

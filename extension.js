@@ -71,7 +71,7 @@ function addFunctionComment() {
 }
 
 /**
- * 格式化当前行功能 - 增强版
+ * 格式化整个JS文件功能
  */
 function formatCurrentLine() {
 	const editor = vscode.window.activeTextEditor;
@@ -80,41 +80,93 @@ function formatCurrentLine() {
 		return;
 	}
 
-	const selection = editor.selection;
-	const currentLine = editor.document.lineAt(selection.active.line);
-	const lineText = currentLine.text;
 	const document = editor.document;
 	const languageId = document.languageId;
 
-	// 如果是空行，跳过格式化
-	if (lineText.trim() === '') {
-		vscode.window.showInformationMessage('空行无需格式化');
+	// 检查是否为JavaScript文件
+	if (languageId !== 'javascript' && languageId !== 'typescript') {
+		vscode.window.showWarningMessage('此功能仅支持JavaScript和TypeScript文件');
 		return;
 	}
 
-	// 获取原始缩进
-	const originalIndent = lineText.match(/^\s*/)[0];
-	let trimmedText = lineText.trim();
-
-	// 根据语言类型进行智能格式化
-	trimmedText = formatByLanguage(trimmedText, languageId);
-
-	// 构建格式化后的文本
-	const formattedText = originalIndent + trimmedText;
-
-	// 只有在内容发生变化时才进行替换
-	if (formattedText !== lineText) {
-		editor.edit(editBuilder => {
-			const range = new vscode.Range(
-				currentLine.range.start,
-				currentLine.range.end
-			);
-			editBuilder.replace(range, formattedText);
-		});
-		vscode.window.showInformationMessage('当前行已格式化');
-	} else {
-		vscode.window.showInformationMessage('当前行已是最佳格式');
+	// 获取整个文件内容
+	const fullText = document.getText();
+	if (fullText.trim() === '') {
+		vscode.window.showInformationMessage('文件为空，无需格式化');
+		return;
 	}
+
+	// 显示进度提示
+	vscode.window.withProgress({
+		location: vscode.ProgressLocation.Notification,
+		title: "正在格式化JS文件...",
+		cancellable: false
+	}, async (progress) => {
+		progress.report({ increment: 0 });
+
+		try {
+			// 按行分割文件内容
+			const lines = fullText.split('\n');
+			const formattedLines = [];
+			let changeCount = 0;
+
+			progress.report({ increment: 20, message: "分析文件结构..." });
+
+			// 逐行格式化
+			for (let i = 0; i < lines.length; i++) {
+				const line = lines[i];
+				const originalIndent = line.match(/^\s*/)[0];
+				const trimmedText = line.trim();
+
+				// 跳过空行和注释行的格式化
+				if (trimmedText === '' || trimmedText.startsWith('//') || trimmedText.startsWith('/*') || trimmedText.startsWith('*')) {
+					formattedLines.push(line);
+					continue;
+				}
+
+				// 格式化当前行
+				const formattedText = formatByLanguage(trimmedText, languageId);
+				const finalLine = originalIndent + formattedText;
+
+				// 检查是否有变化
+				if (finalLine !== line) {
+					changeCount++;
+				}
+
+				formattedLines.push(finalLine);
+
+				// 更新进度
+				if (i % Math.max(1, Math.floor(lines.length / 50)) === 0) {
+					const progressPercent = Math.floor((i / lines.length) * 60) + 20;
+					progress.report({ increment: 0, message: `格式化进度: ${i + 1}/${lines.length}` });
+				}
+			}
+
+			progress.report({ increment: 80, message: "应用格式化结果..." });
+
+			// 如果有变化，则替换整个文件内容
+			if (changeCount > 0) {
+				const formattedContent = formattedLines.join('\n');
+				const fullRange = new vscode.Range(
+					document.positionAt(0),
+					document.positionAt(fullText.length)
+				);
+
+				await editor.edit(editBuilder => {
+					editBuilder.replace(fullRange, formattedContent);
+				});
+
+				progress.report({ increment: 100 });
+				vscode.window.showInformationMessage(`文件格式化完成！共格式化了 ${changeCount} 行代码`);
+			} else {
+				progress.report({ increment: 100 });
+				vscode.window.showInformationMessage('文件已是最佳格式，无需修改');
+			}
+
+		} catch (error) {
+			vscode.window.showErrorMessage(`格式化失败: ${error.message}`);
+		}
+	});
 }
 
 /**

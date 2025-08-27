@@ -9,14 +9,15 @@ function calculateSum(a, b) {
 let result = calculateSum(10, 20);
 
 
+
 /**
  * 函数功能描述
  * @param {type} param 参数描述
  * @returns {type} 返回值描述
  */
                     const multiply = (x, y) => {
-    return x * y;
-};
+                                return x * y;
+                            };
 
 // 另一个函数用于测试
 function processData(data) {
