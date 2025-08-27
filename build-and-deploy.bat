@@ -2,87 +2,19 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-echo ========================================
-echo    VSCode 插件一键构建脚本
-echo ========================================
-echo.
-echo 请选择版本类型
-echo 1. patch - 修复版本
-echo 2. minor - 功能版本  
-echo 3. major - 主要版本
-echo.
-set /p choice=请输入选择 (1/2/3): 
+:: 函数启动 Python 构建脚本
+:: 描述 此批处理文件用于启动 Python 脚本 build_and_deploy.py
+:: 以执行 VSCode 插件的构建和部署流程
+:: 注意 请确保已安装 Python，并且 Python 及其脚本路径已添加到系统环境变量
 
-if "%choice%"=="1" set version_type=patch
-if "%choice%"=="2" set version_type=minor
-if "%choice%"=="3" set version_type=major
+set PYTHONIOENCODING=utf-8
+python .\build_and_deploy.py
 
-if not defined version_type (
-    echo 无效选择，退出
-    pause
+if errorlevel 1 (
+    echo "错误：Python 脚本执行失败。"
+    echo "请确保已安装 Python 并且其已添加到 PATH 环境变量。"
+    echo.""\npause
     exit /b 1
 )
 
-echo.
-echo 选择：%version_type% 版本更新
-echo ========================================
-
-echo.
-echo [1/5] 提交所有更改...
-git add .
-git commit -m "feat: update for version bump"
-if errorlevel 1 (
-    echo 注意：可能没有新的更改需要提交
-)
-echo ✓ 工作目录已提交
-
-echo.
-echo [2/5] 更新版本号...
-call npm version %version_type%
-if errorlevel 1 (
-    echo 错误：版本更新失败
-    pause
-    exit /b 1
-)
-echo ✓ 版本号更新完成
-
-echo.
-echo [3/5] 获取新版本号...
-call npm pkg get version > version.tmp
-set /p new_version=<version.tmp
-set new_version=%new_version:"=%
-del version.tmp
-echo ✓ 新版本：%new_version%
-
-echo.
-:: 函数：删除旧的 .vsix 文件
-:: 描述：在打包新插件之前，确保清除所有旧的 .vsix 文件，避免冲突。
-:: 注意：使用 /q 参数避免删除确认提示。
-"echo. [4/5] 清理旧的 .vsix 文件..."
-del /q *.vsix
-if exist *.vsix (
-    "echo 警告：未能完全删除所有旧的 .vsix 文件。"
-) else (
-    "echo ✓ 旧的 .vsix 文件已清理。"
-)
-
-echo.
-:: 函数：打包插件
-:: 描述：使用 vsce 工具将插件打包成 .vsix 文件。
-:: 注意：确保已安装 vsce (npm install -g @vscode/vsce)。
-"echo. [5/5] 打包插件..."
-call vsce package
-if errorlevel 1 (
-    echo 错误：打包失败
-    echo 请确保已安装：npm install -g @vscode/vsce
-    pause
-    exit /b 1
-)
-echo ✓ 插件打包完成
-
-echo.
-echo ========================================
-echo 🎉 构建完成！
-echo ========================================
-echo.
 pause
