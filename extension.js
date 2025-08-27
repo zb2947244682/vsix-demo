@@ -71,7 +71,7 @@ function addFunctionComment() {
 }
 
 /**
- * 格式化当前行功能
+ * 格式化当前行功能 - 增强版
  */
 function formatCurrentLine() {
 	const editor = vscode.window.activeTextEditor;
@@ -83,21 +83,109 @@ function formatCurrentLine() {
 	const selection = editor.selection;
 	const currentLine = editor.document.lineAt(selection.active.line);
 	const lineText = currentLine.text;
+	const document = editor.document;
+	const languageId = document.languageId;
 
-	// 简单的格式化：移除多余空格，添加适当缩进
-	const trimmedText = lineText.trim();
-	const indentLevel = lineText.length - lineText.trimStart().length;
-	const formattedText = ' '.repeat(indentLevel) + trimmedText;
+	// 如果是空行，跳过格式化
+	if (lineText.trim() === '') {
+		vscode.window.showInformationMessage('空行无需格式化');
+		return;
+	}
 
-	editor.edit(editBuilder => {
-		const range = new vscode.Range(
-			currentLine.range.start,
-			currentLine.range.end
-		);
-		editBuilder.replace(range, formattedText);
-	});
+	// 获取原始缩进
+	const originalIndent = lineText.match(/^\s*/)[0];
+	let trimmedText = lineText.trim();
 
-	vscode.window.showInformationMessage('当前行已格式化');
+	// 根据语言类型进行智能格式化
+	trimmedText = formatByLanguage(trimmedText, languageId);
+
+	// 构建格式化后的文本
+	const formattedText = originalIndent + trimmedText;
+
+	// 只有在内容发生变化时才进行替换
+	if (formattedText !== lineText) {
+		editor.edit(editBuilder => {
+			const range = new vscode.Range(
+				currentLine.range.start,
+				currentLine.range.end
+			);
+			editBuilder.replace(range, formattedText);
+		});
+		vscode.window.showInformationMessage('当前行已格式化');
+	} else {
+		vscode.window.showInformationMessage('当前行已是最佳格式');
+	}
+}
+
+/**
+ * 根据编程语言进行智能格式化
+ * @param {string} text 要格式化的文本
+ * @param {string} languageId 编程语言ID
+ * @returns {string} 格式化后的文本
+ */
+function formatByLanguage(text, languageId) {
+	// 通用格式化规则
+	let formatted = text;
+
+	// 1. 移除多余的空格
+	formatted = formatted.replace(/\s+/g, ' ');
+
+	// 2. 操作符周围添加空格
+	formatted = formatted.replace(/([^\s=!<>])([=!<>]=?|[+\-*/%&|^])([^\s=!<>])/g, '$1 $2 $3');
+	formatted = formatted.replace(/([^\s])([+\-*/%])([^\s=])/g, '$1 $2 $3');
+
+	// 3. 逗号后添加空格
+	formatted = formatted.replace(/,([^\s])/g, ', $1');
+
+	// 4. 分号后添加空格（如果不是行尾）
+	formatted = formatted.replace(/;([^\s$])/g, '; $1');
+
+	// 5. 括号内侧去除多余空格
+	formatted = formatted.replace(/\(\s+/g, '(');
+	formatted = formatted.replace(/\s+\)/g, ')');
+	formatted = formatted.replace(/\[\s+/g, '[');
+	formatted = formatted.replace(/\s+\]/g, ']');
+	formatted = formatted.replace(/\{\s+/g, '{ ');
+	formatted = formatted.replace(/\s+\}/g, ' }');
+
+	// 根据具体语言进行特殊处理
+	switch (languageId) {
+		case 'javascript':
+		case 'typescript':
+			// 箭头函数格式化
+			formatted = formatted.replace(/\s*=>\s*/g, ' => ');
+			// 对象属性冒号格式化
+			formatted = formatted.replace(/:\s*/g, ': ');
+			break;
+
+		case 'python':
+			// Python 冒号格式化
+			formatted = formatted.replace(/:\s*$/g, ':');
+			// Python 比较操作符
+			formatted = formatted.replace(/\s*(in|not in|is|is not)\s*/g, ' $1 ');
+			break;
+
+		case 'java':
+		case 'csharp':
+			// 泛型括号处理
+			formatted = formatted.replace(/<\s+/g, '<');
+			formatted = formatted.replace(/\s+>/g, '>');
+			break;
+
+		case 'css':
+		case 'scss':
+		case 'less':
+			// CSS 属性冒号格式化
+			formatted = formatted.replace(/:\s*/g, ': ');
+			// CSS 分号处理
+			formatted = formatted.replace(/;\s*$/g, ';');
+			break;
+	}
+
+	// 6. 清理可能产生的多余空格
+	formatted = formatted.replace(/\s+/g, ' ').trim();
+
+	return formatted;
 }
 
 /**

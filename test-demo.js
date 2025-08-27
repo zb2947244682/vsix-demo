@@ -6,9 +6,14 @@ function calculateSum(a, b) {
 }
 
 // 这行代码格式不规范，可以用来测试格式化功能
-let   result    =   calculateSum(  10,   20  );
+let result = calculateSum(10, 20);
 
-// 箭头函数示例
+
+/**
+ * 函数功能描述
+ * @param {type} param 参数描述
+ * @returns {type} 返回值描述
+ */
 const multiply = (x, y) => {
     return x * y;
 };
