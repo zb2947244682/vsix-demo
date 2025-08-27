@@ -75,18 +75,22 @@ echo "✓ 版本号更新完成（npm version 已自动创建提交）"
 
 echo.
 echo "[3/5] 获取当前版本号..."
-for /f "tokens=2 delims=:" %%i in ('npm pkg get version') do (
-    set current_version=%%i
-)
-set current_version=!current_version:"=!
-set current_version=!current_version: =!
-echo "✓ 当前版本: !current_version!"
+rem 使用更可靠的方法获取版本号
+npm pkg get version > temp_version.txt
+set /p temp_version=<temp_version.txt
+del temp_version.txt
+rem 移除引号和空格
+set current_version=%temp_version:"=%
+set current_version=%current_version: =%
+echo "✓ 当前版本: %current_version%"
 
 echo.
 echo "[4/5] 正在打包插件..."
+echo "执行命令: vsce package"
 vsce package
 if errorlevel 1 (
     echo "错误：插件打包失败！"
+    echo "请确保已安装 vsce: npm install -g vsce"
     pause
     exit /b 1
 )
@@ -116,7 +120,7 @@ echo "========================================"
 echo.
 echo "执行的操作："
 echo "- ✓ 检查并提交未保存的更改"
-echo "- ✓ 版本号更新到 !current_version! (%version_type%)"
+echo "- ✓ 版本号更新到 %current_version% (%version_type%)"
 echo "- ✓ 自动创建版本提交（由 npm version）"
 echo "- ✓ 插件打包"
 echo "- ✓ 推送到远程仓库"
