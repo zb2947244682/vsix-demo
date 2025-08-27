@@ -20,16 +20,16 @@ function activate(context) {
         });
     });
 
-    // 注册右键菜单命令 - 打开 Cursor
+    // 注册右键菜单命令 - 打开 Apifox
     const openCursorDisposable = vscode.commands.registerCommand('demo.openCursor', (uri) => {
         const folderPath = uri.fsPath;
-        const cursorPath = 'C:\\Users\\Jimmy\\AppData\\Local\\Programs\\cursor\\Cursor.exe';
+        const cursorPath = 'C:\\Users\\Jimmy\\AppData\\Local\\Programs\\Apifox\\Apifox.exe';
         exec(`"${cursorPath}"`, { cwd: folderPath }, (error, stdout, stderr) => {
             if (error) {
-                vscode.window.showErrorMessage(`打开 Cursor 失败: ${error.message}`);
+                vscode.window.showErrorMessage(`打开 Apifox 失败: ${error.message}`);
                 return;
             }
-            vscode.window.showInformationMessage('Cursor 已启动');
+            vscode.window.showInformationMessage('Apifox 已启动');
         });
     });
 
