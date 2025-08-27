@@ -70,12 +70,4 @@ echo ========================================
 echo 🎉 构建完成！
 echo ========================================
 echo.
-echo 执行结果：
-echo - 版本号：%new_version%
-echo - 类型：%version_type%
-echo - 生成文件：
-for %%f in (*.vsix) do echo   %%f
-echo.
-echo 安装命令：code --install-extension [文件名].vsix
-echo.
 pause
