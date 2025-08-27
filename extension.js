@@ -23,7 +23,7 @@ function activate(context) {
     // 注册右键菜单命令 - 打开 Apifox
     const openCursorDisposable = vscode.commands.registerCommand('demo.openCursor', (uri) => {
         const folderPath = uri.fsPath;
-        const cursorPath = 'E:\\BAT\\start_cursor.bat';
+        const cursorPath = 'C:\\Users\\Jimmy\\AppData\\Local\\Programs\\cursor\\Cursor.exe';
         exec(`"${cursorPath}"`, { cwd: folderPath }, (error, stdout, stderr) => {
             if (error) {
                 vscode.window.showErrorMessage(`打开 Apifox 失败: ${error.message}`);
