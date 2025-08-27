@@ -3,150 +3,79 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 echo ========================================
-echo    VSCode 插件自动化构建部署脚本
+echo    VSCode 插件一键构建脚本
 echo ========================================
 echo.
-echo 请选择要更新的版本类型：
-echo 1. 补丁版本 (patch) - 修复bug，向后兼容
-echo 2. 次版本 (minor) - 新增功能，向后兼容  
-echo 3. 主版本 (major) - 重大更改，可能不向后兼容
+echo 请选择版本类型：
+echo 1. patch - 修复版本
+echo 2. minor - 功能版本  
+echo 3. major - 主要版本
 echo.
 set /p choice=请输入选择 (1/2/3): 
 
-if "%choice%"=="1" (
-    set version_type=patch
-    echo 选择：补丁版本更新
-) else if "%choice%"=="2" (
-    set version_type=minor
-    echo 选择：次版本更新
-) else if "%choice%"=="3" (
-    set version_type=major
-    echo 选择：主版本更新
-) else (
-    echo 无效选择，退出脚本
+if "%choice%"=="1" set version_type=patch
+if "%choice%"=="2" set version_type=minor
+if "%choice%"=="3" set version_type=major
+
+if not defined version_type (
+    echo 无效选择，退出
     pause
     exit /b 1
 )
 
 echo.
-echo ========================================
-echo 开始执行构建部署流程...
+echo 选择：%version_type% 版本更新
 echo ========================================
 
 echo.
-echo [1/5] 检查工作目录状态...
-git status --porcelain > temp_status.txt 2>nul
-if exist temp_status.txt (
-    for /f %%i in ("temp_status.txt") do set file_size=%%~zi
-    if !file_size! gtr 0 (
-        echo 发现未提交的更改，正在提交...
-        git add .
-        if errorlevel 1 (
-            echo 错误：添加文件到暂存区失败！
-            del temp_status.txt 2>nul
-            pause
-            exit /b 1
-        )
-        
-        set /p commit_msg=请输入提交信息（或按回车使用默认信息）: 
-        if "!commit_msg!"=="" (
-            set commit_msg=feat: update before version bump
-        )
-        
-        git commit -m "!commit_msg!"
-        if errorlevel 1 (
-            echo 错误：提交代码失败！
-            del temp_status.txt 2>nul
-            pause
-            exit /b 1
-        )
-        echo ✓ 代码提交完成
-    ) else (
-        echo ✓ 工作目录干净，无需提交
-    )
-    del temp_status.txt 2>nul
-) else (
-    echo ✓ 工作目录干净，无需提交
+echo [1/4] 提交所有更改...
+git add .
+git commit -m "feat: update for version bump"
+if errorlevel 1 (
+    echo 注意：可能没有新的更改需要提交
 )
+echo ✓ 工作目录已提交
 
 echo.
-echo [2/5] 正在更新版本号...
-echo 执行命令：npm version %version_type%
-call npm version %version_type% > temp_npm_output.txt 2>&1
-set npm_result=%errorlevel%
-if exist temp_npm_output.txt (
-    type temp_npm_output.txt
-    del temp_npm_output.txt
-)
-if %npm_result% neq 0 (
-    echo 错误：版本更新失败！
+echo [2/4] 更新版本号...
+call npm version %version_type%
+if errorlevel 1 (
+    echo 错误：版本更新失败
     pause
     exit /b 1
 )
-echo ✓ 版本号更新完成（npm version 已自动创建提交）
+echo ✓ 版本号更新完成
 
 echo.
-echo [3/5] 获取当前版本号...
-call npm pkg get version > temp_version.txt 2>nul
-if exist temp_version.txt (
-    set /p temp_version=<temp_version.txt
-    del temp_version.txt
-    set current_version=!temp_version:"=!
-    set current_version=!current_version: =!
-    echo ✓ 当前版本: !current_version!
-) else (
-    echo 警告：无法获取版本号，继续执行...
-    set current_version=未知
-)
+echo [3/4] 获取新版本号...
+call npm pkg get version > version.tmp
+set /p new_version=<version.tmp
+set new_version=%new_version:"=%
+del version.tmp
+echo ✓ 新版本：%new_version%
 
 echo.
-echo [4/5] 正在打包插件...
-echo 执行命令：vsce package
+echo [4/4] 打包插件...
 call vsce package
 if errorlevel 1 (
-    echo 错误：插件打包失败！
-    echo 请确保已安装 vsce: npm install -g @vscode/vsce
+    echo 错误：打包失败
+    echo 请确保已安装：npm install -g @vscode/vsce
     pause
     exit /b 1
 )
 echo ✓ 插件打包完成
 
 echo.
-echo [5/5] 正在推送到远程仓库...
-echo 执行命令：git push origin main
-git push origin main
-if errorlevel 1 (
-    echo 尝试推送到 master 分支...
-    git push origin master
-    if errorlevel 1 (
-        echo 错误：推送到远程仓库失败！
-        echo 请检查网络连接和仓库权限
-        pause
-        exit /b 1
-    )
-    echo ✓ 推送到 master 分支完成
-) else (
-    echo ✓ 推送到 main 分支完成
-)
-
-echo.
 echo ========================================
-echo 🎉 构建部署流程全部完成！
+echo 🎉 构建完成！
 echo ========================================
 echo.
-echo 执行的操作：
-echo - ✓ 检查并提交未保存的更改
-echo - ✓ 版本号更新到 !current_version! (%version_type%)
-echo - ✓ 自动创建版本提交（由 npm version）
-echo - ✓ 插件打包
-echo - ✓ 推送到远程仓库
+echo 执行结果：
+echo - 版本号：%new_version%
+echo - 类型：%version_type%
+echo - 生成文件：
+for %%f in (*.vsix) do echo   %%f
 echo.
-echo 生成的文件：
-for %%f in (*.vsix) do (
-    echo - %%f
-)
-echo.
-echo 您可以在 VS Code 中安装新打包的 .vsix 文件进行测试
-echo 或者使用命令: code --install-extension [文件名].vsix
+echo 安装命令：code --install-extension [文件名].vsix
 echo.
 pause
