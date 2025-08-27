@@ -14,7 +14,7 @@ let result = calculateSum(10, 20);
  * @param {type} param 参数描述
  * @returns {type} 返回值描述
  */
-const multiply = (x, y) => {
+                    const multiply = (x, y) => {
     return x * y;
 };
 
