@@ -1,7 +1,7 @@
 {
   "name": "code-helper-demo",
   "displayName": "代码助手演示",
-  "description": "一个简单的VSCode插件演示，包含代码格式化、注释生成等实用功能",
+  "description": "一个简单的VSCode插件演示，包含右键打开Notepad等实用功能",
   "version": "0.2.3",
   "repository": {
     "type": "git",
@@ -18,33 +18,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "demo.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "demo.addComment",
-        "title": "添加函数注释"
-      },
-      {
-        "command": "demo.formatCode",
-        "title": "格式化整个JS文件"
-      },
-      {
-        "command": "demo.showStats",
-        "title": "显示文件统计信息"
+        "command": "demo.openNotepad",
+        "title": "打开 Notepad"
       }
     ],
     "menus": {
-      "editor/context": [
+      "explorer/context": [
         {
-          "command": "demo.addComment",
-          "group": "modification",
-          "when": "editorTextFocus"
-        },
-        {
-          "command": "demo.formatCode",
-          "group": "modification",
-          "when": "editorTextFocus && resourceExtname =~ /\\.(js|ts)$/"
+          "command": "demo.openNotepad",
+          "group": "navigation",
+          "when": "explorerResourceIsFolder"
         }
       ]
     }
