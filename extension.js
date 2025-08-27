@@ -8,12 +8,9 @@ const { exec } = require('child_process');
 function activate(context) {
     console.log('代码助手演示插件已激活!');
 
-    // 注册右键菜单命令
+    // 注册右键菜单命令 - 打开 Notepad
     const openNotepadDisposable = vscode.commands.registerCommand('demo.openNotepad', (uri) => {
-        // 获取点击的文件夹路径
         const folderPath = uri.fsPath;
-        
-        // 在 Windows 上启动 notepad.exe
         exec('notepad', { cwd: folderPath }, (error, stdout, stderr) => {
             if (error) {
                 vscode.window.showErrorMessage(`打开 Notepad 失败: ${error.message}`);
@@ -23,26 +20,31 @@ function activate(context) {
         });
     });
 
-    // 注册右键菜单
-    context.subscriptions.push(
-        vscode.commands.registerCommand('demo.openNotepad', openNotepadDisposable),
-        vscode.window.createTreeView('explorer', {
-            showCollapseAll: true
-        })
-    );
+    // 注册右键菜单命令 - 打开 Cursor
+    const openCursorDisposable = vscode.commands.registerCommand('demo.openCursor', (uri) => {
+        const folderPath = uri.fsPath;
+        const cursorPath = 'C:\\Users\\Jimmy\\AppData\\Local\\Programs\\cursor\\Cursor.exe';
+        exec(`"${cursorPath}"`, { cwd: folderPath }, (error, stdout, stderr) => {
+            if (error) {
+                vscode.window.showErrorMessage(`打开 Cursor 失败: ${error.message}`);
+                return;
+            }
+            vscode.window.showInformationMessage('Cursor 已启动');
+        });
+    });
 
     // 注册命令到右键菜单
     context.subscriptions.push(
-        vscode.commands.registerCommand('demo.openNotepad', (uri) => {
-            vscode.commands.executeCommand('demo.openNotepad', uri);
-        })
-    );
-
-    // 添加右键菜单项
-    context.subscriptions.push(
+        openNotepadDisposable,
+        openCursorDisposable,
         vscode.commands.registerCommand('demo.openNotepad', (uri) => {
             if (uri && uri.fsPath) {
                 vscode.commands.executeCommand('demo.openNotepad', uri);
+            }
+        }),
+        vscode.commands.registerCommand('demo.openCursor', (uri) => {
+            if (uri && uri.fsPath) {
+                vscode.commands.executeCommand('demo.openCursor', uri);
             }
         })
     );

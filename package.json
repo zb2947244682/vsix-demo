@@ -8,7 +8,7 @@
     "url": "https://github.com/zb2947244682/vsix-demo.git"
   },
   "engines": {
-    "vscode": "^1.103.0"
+    "vscode": "^1.100.0"
   },
   "categories": [
     "Other"
@@ -20,12 +20,21 @@
       {
         "command": "demo.openNotepad",
         "title": "打开 Notepad"
+      },
+      {
+        "command": "demo.openCursor",
+        "title": "打开 Cursor"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "command": "demo.openNotepad",
+          "group": "navigation",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "demo.openCursor",
           "group": "navigation",
           "when": "explorerResourceIsFolder"
         }
@@ -38,7 +47,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.103.0",
+    "@types/vscode": "^1.100.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "eslint": "^9.32.0",
