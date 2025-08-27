@@ -20,6 +20,11 @@
                                             };
 
                 // 另一个函数用于测试
+/**
+ * 函数功能描述
+ * @param {type} param 参数描述
+ * @returns {type} 返回值描述
+ */
                 function processData(data) {
                     if (! data) {
                         return null;
