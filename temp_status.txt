@@ -1,0 +1,2 @@
+M  build-and-deploy.bat
+AM temp_status.txt
