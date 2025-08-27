@@ -178,26 +178,32 @@ function formatByLanguage(text, languageId) {
 	// 通用格式化规则
 	let formatted = text;
 
-	// 1. 移除多余的空格
+	// 1. 移除多余的空格，但保留单个空格
 	formatted = formatted.replace(/\s+/g, ' ');
 
-	// 2. 操作符周围添加空格
-	formatted = formatted.replace(/([^\s=!<>])([=!<>]=?|[+\-*/%&|^])([^\s=!<>])/g, '$1 $2 $3');
-	formatted = formatted.replace(/([^\s])([+\-*/%])([^\s=])/g, '$1 $2 $3');
+	// 2. 关键字后添加空格
+	formatted = formatted.replace(/\b(function|const|let|var|if|else|for|while|return|class|extends|import|export|from|as)([^\s])/g, '$1 $2');
 
-	// 3. 逗号后添加空格
+	// 3. 操作符周围添加空格
+	formatted = formatted.replace(/([^\s=!<>+\-*/%&|^])([=!<>]=?|[+\-*/%&|^]=?|&&|\|\|)([^\s=!<>+\-*/%&|^])/g, '$1 $2 $3');
+	formatted = formatted.replace(/([^\s])([=!<>+\-*/%&|^])([^\s=])/g, '$1 $2 $3');
+
+	// 4. 逗号后添加空格
 	formatted = formatted.replace(/,([^\s])/g, ', $1');
 
-	// 4. 分号后添加空格（如果不是行尾）
+	// 5. 分号后添加空格（如果不是行尾）
 	formatted = formatted.replace(/;([^\s$])/g, '; $1');
 
-	// 5. 括号内侧去除多余空格
+	// 6. 括号前后的空格处理
 	formatted = formatted.replace(/\(\s+/g, '(');
 	formatted = formatted.replace(/\s+\)/g, ')');
 	formatted = formatted.replace(/\[\s+/g, '[');
 	formatted = formatted.replace(/\s+\]/g, ']');
-	formatted = formatted.replace(/\{\s+/g, '{ ');
-	formatted = formatted.replace(/\s+\}/g, ' }');
+
+	// 7. 花括号的空格处理
+	formatted = formatted.replace(/\{\s*/g, '{ ');
+	formatted = formatted.replace(/\s*\}/g, ' }');
+	formatted = formatted.replace(/\}\s*([^\s;,)])/g, '} $1');
 
 	// 根据具体语言进行特殊处理
 	switch (languageId) {
@@ -206,7 +212,17 @@ function formatByLanguage(text, languageId) {
 			// 箭头函数格式化
 			formatted = formatted.replace(/\s*=>\s*/g, ' => ');
 			// 对象属性冒号格式化
-			formatted = formatted.replace(/:\s*/g, ': ');
+			formatted = formatted.replace(/:([^\s])/g, ': $1');
+			// 函数调用括号前不要空格
+			formatted = formatted.replace(/\b(\w+)\s+\(/g, '$1(');
+			// 控制结构括号前要空格
+			formatted = formatted.replace(/\b(if|for|while|switch|catch)\(/g, '$1 (');
+			// 点号前后不要空格
+			formatted = formatted.replace(/\s*\.\s*/g, '.');
+			// 修复单独的花括号
+			if (formatted.trim() === '{' || formatted.trim() === '}') {
+				formatted = formatted.trim();
+			}
 			break;
 
 		case 'python':
@@ -233,8 +249,13 @@ function formatByLanguage(text, languageId) {
 			break;
 	}
 
-	// 6. 清理可能产生的多余空格
+	// 8. 最终清理：移除多余空格，但保持结构
 	formatted = formatted.replace(/\s+/g, ' ').trim();
+
+	// 9. 特殊情况处理：单独的花括号行
+	if (formatted === '{ }') {
+		formatted = '{';
+	}
 
 	return formatted;
 }
