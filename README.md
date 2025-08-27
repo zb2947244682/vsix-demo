@@ -1,51 +1,42 @@
-# demo README
+# 代码助手演示插件
 
-This is the README for your extension "demo". After writing up a brief description, we recommend including the following sections.
+这是一个简单的VSCode插件演示，展示了如何创建实用的代码辅助功能。
 
-## Features
+## 功能特性
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+本插件提供以下实用功能：
 
-For example if there is an image subfolder under your extension project workspace:
+- **Hello World**: 显示欢迎消息
+- **添加函数注释**: 为函数自动生成JSDoc格式的注释模板
+- **格式化当前行**: 简单的代码行格式化功能
+- **显示文件统计信息**: 显示当前文件的行数、字符数、单词数等统计信息
 
-\!\[feature X\]\(images/feature-x.png\)
+## 使用方法
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### 命令面板
 
-## Requirements
+按 `Ctrl+Shift+P` (Windows/Linux) 或 `Cmd+Shift+P` (Mac) 打开命令面板，然后输入以下命令：
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- `Hello World`: 显示欢迎消息
+- `添加函数注释`: 为当前行的函数添加注释模板
+- `格式化当前行`: 格式化当前光标所在行
+- `显示文件统计信息`: 显示当前文件的统计信息
 
-## Extension Settings
+### 右键菜单
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+在编辑器中右键点击，可以在上下文菜单中找到：
+- 添加函数注释
+- 格式化当前行
 
-For example:
+## 系统要求
 
-This extension contributes the following settings:
+- Visual Studio Code 1.103.0 或更高版本
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## 发布说明
 
-## Known Issues
+### 0.0.1
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+初始版本发布，包含基础的代码辅助功能。
 
 ---
 
