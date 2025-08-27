@@ -2,7 +2,7 @@
   "name": "code-helper-demo",
   "displayName": "代码助手演示",
   "description": "一个简单的VSCode插件演示，包含右键打开Notepad等实用功能",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/zb2947244682/vsix-demo.git"
