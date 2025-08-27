@@ -81,7 +81,7 @@ def update_version(version_type):
     print("✓ 版本号更新完成")
 
     print("\n[3/5] 获取新版本号...")
-    result = run_command(["npm", "pkg", "get", "version"], capture_output=True)
+    result = run_command(["npm", "pkg", "get", "version"])
     new_version = result.stdout.strip().strip('"')
     print(f"✓ 新版本：{new_version}")
     return new_version
